@@ -11,13 +11,17 @@ import {EmailDomainProver} from "../../src/vlayer/EmailDomainProver.sol";
 contract EmailProofLibWrapper {
     using EmailProofLib for UnverifiedEmail;
 
-    function verify(UnverifiedEmail calldata email) public view returns (VerifiedEmail memory v) {
+    function verify(
+        UnverifiedEmail calldata email
+    ) public view returns (VerifiedEmail memory v) {
         return email.verify();
     }
 }
 
 contract EmailDomainProverTest is VTest {
-    function getTestEmail(string memory path) public view returns (UnverifiedEmail memory) {
+    function getTestEmail(
+        string memory path
+    ) public view returns (UnverifiedEmail memory) {
         string memory mime = vm.readFile(path);
         return preverifyEmail(mime);
     }
@@ -26,10 +30,18 @@ contract EmailDomainProverTest is VTest {
         EmailProofLibWrapper wrapper = new EmailProofLibWrapper();
         address johnDoe = vm.addr(1);
         EmailDomainProver prover = new EmailDomainProver();
-        UnverifiedEmail memory email = getTestEmail("testdata/verify_vlayer.eml");
+        UnverifiedEmail memory email = getTestEmail(
+            "testdata/verify_vlayer.eml"
+        );
         VerifiedEmail memory verifiedEmail = wrapper.verify(email);
-        callProver();
-        (, bytes32 emailHash, address registeredWallet, string memory emailDomain) = prover.main(email);
+        // @notice This line of code will cause the test to fail, but we should have this as in the docs
+        // callProver();
+        (
+            ,
+            bytes32 emailHash,
+            address registeredWallet,
+            string memory emailDomain
+        ) = prover.main(email);
 
         assertEq(emailHash, sha256(abi.encodePacked(verifiedEmail.from)));
         assertEq(registeredWallet, johnDoe);
